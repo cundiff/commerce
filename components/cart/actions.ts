@@ -5,9 +5,10 @@ import {
   addToCart,
   createCart,
   getCart,
+  getCheckoutUrl,
   removeFromCart,
   updateCart,
-} from "lib/shopify";
+} from "lib/nopcommerce";
 import { updateTag } from "next/cache";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
@@ -96,8 +97,8 @@ export async function updateItemQuantity(
 }
 
 export async function redirectToCheckout() {
-  let cart = await getCart();
-  redirect(cart!.checkoutUrl);
+  const checkoutUrl = await getCheckoutUrl();
+  redirect(checkoutUrl);
 }
 
 export async function createCartAndSetCookie() {

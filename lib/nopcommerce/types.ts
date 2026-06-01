@@ -1,0 +1,16 @@
+export type {
+  Cart,
+  CartItem,
+  CartProduct,
+  Collection,
+  Connection,
+  Edge,
+  Image,
+  Menu,
+  Money,
+  Page,
+  Product,
+  ProductOption,
+  ProductVariant,
+  SEO,
+} from "lib/shopify/types";
