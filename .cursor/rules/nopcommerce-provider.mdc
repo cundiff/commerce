@@ -1,0 +1,24 @@
+---
+description: Preserve nopCommerce provider conventions in the Commerce storefront
+globs:
+  - "app/**/*.ts"
+  - "app/**/*.tsx"
+  - "components/**/*.ts"
+  - "components/**/*.tsx"
+  - "lib/**/*.ts"
+  - "lib/**/*.tsx"
+  - ".env.example"
+alwaysApply: false
+---
+
+# nopCommerce provider
+
+This integration branch uses `lib/nopcommerce` as the Commerce backend provider.
+
+- Do not reintroduce Shopify imports, Shopify fragments, or Shopify environment variables.
+- Use `NOPCOMMERCE_API_URL` as the storefront API base URL.
+- Keep provider responses shaped like `lib/types.ts`.
+- Cart operations must not log cart tokens, cookies, authorization headers, request bodies, or secrets.
+- Server Actions in `components/cart/actions.ts` should return user-safe messages.
+- Any new product UI field should be typed in `lib/types.ts` and sourced from the backend DTO.
+- Provider diagnostics should include method, path, status, duration, and request ID when available.

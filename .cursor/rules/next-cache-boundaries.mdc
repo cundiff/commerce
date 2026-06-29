@@ -1,0 +1,23 @@
+---
+description: Avoid invalid dynamic request APIs inside cached Next.js provider code
+globs:
+  - "app/**/*.ts"
+  - "app/**/*.tsx"
+  - "components/**/*.ts"
+  - "components/**/*.tsx"
+  - "lib/**/*.ts"
+  - "lib/**/*.tsx"
+alwaysApply: false
+---
+
+# Next.js cache boundaries
+
+This app uses Next.js App Router, React Server Components, Server Actions, and `"use cache"`.
+
+When editing provider functions in `lib/nopcommerce`:
+
+- Do not call `cookies()`, `headers()`, request-specific APIs, or other dynamic APIs inside functions marked `"use cache"`.
+- Keep request-specific behavior in uncached functions or Server Actions.
+- If a cached provider needs a request ID for outbound fetches, generate one locally instead of reading request headers.
+- Keep provider fetch helpers safe for static generation, partial prerendering, and cached data reads.
+- Run `pnpm prettier:check`, `pnpm exec tsc --noEmit`, and `pnpm build` after changes touching cached provider code.
