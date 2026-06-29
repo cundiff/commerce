@@ -27,6 +27,7 @@ export type ProductVariant = {
   id: string;
   title: string;
   availableForSale: boolean;
+  availabilityStatus: AvailabilityStatus;
   selectedOptions: {
     name: string;
     value: string;
@@ -34,10 +35,17 @@ export type ProductVariant = {
   price: Money;
 };
 
+export type AvailabilityStatus =
+  | "in-stock"
+  | "low-stock"
+  | "out-of-stock"
+  | "backorder";
+
 export type Product = {
   id: string;
   handle: string;
   availableForSale: boolean;
+  availabilityStatus: AvailabilityStatus;
   title: string;
   description: string;
   descriptionHtml: string;
