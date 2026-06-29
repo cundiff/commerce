@@ -3,26 +3,27 @@
 import { PlusIcon } from "@heroicons/react/24/outline";
 import clsx from "clsx";
 import { addItem } from "components/cart/actions";
+import { getAvailabilityLabel } from "lib/availability";
 import { Product, ProductVariant } from "lib/types";
 import { useSearchParams } from "next/navigation";
 import { useActionState } from "react";
 import { useCart } from "./cart-context";
 
 function SubmitButton({
-  availableForSale,
+  selectedVariant,
   selectedVariantId,
 }: {
-  availableForSale: boolean;
+  selectedVariant: ProductVariant | undefined;
   selectedVariantId: string | undefined;
 }) {
   const buttonClasses =
     "relative flex w-full items-center justify-center rounded-full bg-blue-600 p-4 tracking-wide text-white";
   const disabledClasses = "cursor-not-allowed opacity-60 hover:opacity-60";
 
-  if (!availableForSale) {
+  if (selectedVariant && !selectedVariant.availableForSale) {
     return (
       <button disabled className={clsx(buttonClasses, disabledClasses)}>
-        Out Of Stock
+        {getAvailabilityLabel(selectedVariant.availabilityStatus)}
       </button>
     );
   }
@@ -58,7 +59,7 @@ function SubmitButton({
 }
 
 export function AddToCart({ product }: { product: Product }) {
-  const { variants, availableForSale } = product;
+  const { variants } = product;
   const { addCartItem } = useCart();
   const searchParams = useSearchParams();
   const [message, formAction] = useActionState(addItem, null);
@@ -70,20 +71,25 @@ export function AddToCart({ product }: { product: Product }) {
   );
   const defaultVariantId = variants.length === 1 ? variants[0]?.id : undefined;
   const selectedVariantId = variant?.id || defaultVariantId;
+  const selectedVariant =
+    variants.find(
+      (productVariant) => productVariant.id === selectedVariantId,
+    ) ?? variant;
   const addItemAction = formAction.bind(null, selectedVariantId);
-  const finalVariant = variants.find(
-    (variant) => variant.id === selectedVariantId,
-  )!;
 
   return (
     <form
       action={async () => {
-        addCartItem(finalVariant, product);
+        if (!selectedVariant || !selectedVariant.availableForSale) {
+          return;
+        }
+
+        addCartItem(selectedVariant, product);
         addItemAction();
       }}
     >
       <SubmitButton
-        availableForSale={availableForSale}
+        selectedVariant={selectedVariant}
         selectedVariantId={selectedVariantId}
       />
       <p aria-live="polite" className="sr-only" role="status">

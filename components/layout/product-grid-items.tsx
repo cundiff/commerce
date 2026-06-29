@@ -1,5 +1,9 @@
 import Grid from "components/grid";
 import { GridTileImage } from "components/grid/tile";
+import {
+  getAvailabilityBadgeClass,
+  getAvailabilityLabel,
+} from "lib/availability";
 import { Product } from "lib/types";
 import Link from "next/link";
 
@@ -17,6 +21,11 @@ export default function ProductGridItems({
             href={`/product/${product.handle}`}
             prefetch={true}
           >
+            <span
+              className={`absolute left-2 top-2 z-20 rounded-full px-2 py-1 text-xs ${getAvailabilityBadgeClass(product.availabilityStatus)}`}
+            >
+              {getAvailabilityLabel(product.availabilityStatus)}
+            </span>
             <GridTileImage
               alt={product.title}
               label={{

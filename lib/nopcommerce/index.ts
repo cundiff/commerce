@@ -11,6 +11,15 @@ import { Cart, Collection, Menu, Page, Product } from "lib/types";
 const API_URL = process.env.NOPCOMMERCE_API_URL
   ? process.env.NOPCOMMERCE_API_URL.replace(/\/$/, "")
   : "";
+const SHOULD_LOG_FETCHES = process.env.NOPCOMMERCE_LOG_FETCHES === "true";
+
+function createRequestId(): string {
+  try {
+    return crypto.randomUUID();
+  } catch {
+    return `nop-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
+  }
+}
 
 /**
  * Thin fetch wrapper around the nopCommerce Headless Storefront API plugin.
@@ -34,20 +43,42 @@ async function nopFetch<T>({
     throw new Error("NOPCOMMERCE_API_URL environment variable is not set");
   }
 
+  const requestId = createRequestId();
+  const startedAt = Date.now();
   const requestHeaders: Record<string, string> = {
     "Content-Type": "application/json",
+    "X-Nop-Request-Id": requestId,
   };
 
   if (token) {
     requestHeaders["X-Nop-Cart-Token"] = token;
   }
 
-  const result = await fetch(`${API_URL}${path}`, {
-    method,
-    headers: requestHeaders,
-    ...(body ? { body: JSON.stringify(body) } : {}),
-    ...(tags ? { next: { tags } } : {}),
-  });
+  let result: Response;
+  try {
+    result = await fetch(`${API_URL}${path}`, {
+      method,
+      headers: requestHeaders,
+      ...(body ? { body: JSON.stringify(body) } : {}),
+      ...(tags ? { next: { tags } } : {}),
+    });
+  } catch (error) {
+    const duration = Date.now() - startedAt;
+    console.error(
+      `nopFetch network error: ${method} ${path} -> failed in ${duration}ms requestId=${requestId}`,
+    );
+    throw error;
+  }
+
+  const duration = Date.now() - startedAt;
+  const backendRequestId = result.headers.get("x-nop-request-id") ?? "none";
+
+  if (SHOULD_LOG_FETCHES || !result.ok) {
+    const logFn = result.ok ? console.info : console.error;
+    logFn(
+      `nopFetch ${method} ${path} -> ${result.status} in ${duration}ms backendRequestId=${backendRequestId} requestId=${requestId}`,
+    );
+  }
 
   if (result.status === 404) {
     return { status: 404, body: undefined as T };
@@ -55,7 +86,7 @@ async function nopFetch<T>({
 
   if (!result.ok) {
     throw new Error(
-      `nopCommerce API request failed: ${method} ${path} -> ${result.status}`,
+      `nopCommerce API request failed: ${method} ${path} -> ${result.status} (${backendRequestId})`,
     );
   }
 
