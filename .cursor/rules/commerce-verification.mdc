@@ -1,0 +1,15 @@
+---
+description: Required checks for Commerce TypeScript, provider, and Next.js changes
+alwaysApply: true
+---
+
+# Commerce verification
+
+After editing TypeScript, TSX, provider code, app routes, cached data functions, or Next config:
+
+- Run `pnpm prettier:check`.
+- Run `pnpm exec tsc --noEmit`.
+- Run `pnpm build` for provider, cache, route, config, or app-level changes.
+- If dependencies are missing, install with `pnpm install --frozen-lockfile`.
+- Do not claim the app builds unless `pnpm build` exits 0.
+- If a check cannot run, state the exact command, exit reason, and remaining risk.
